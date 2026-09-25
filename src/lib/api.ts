@@ -13,10 +13,6 @@ export interface GenerateResponse {
   error?: AppError;
 }
 
-/**
- * Calls the backend API to generate study material.
- * Uses AbortController for timeout and stale-request protection.
- */
 export async function generateStudySession(
   request: GenerateRequest,
   options: GenerateOptions = {}

@@ -27,26 +27,24 @@ export function useStudySession() {
 
   const [activeTab, setActiveTab] = useState<TabKey>('overview');
 
-  // Flashcard state
   const [currentFlashcard, setCurrentFlashcard] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [flashcardCompleted, setFlashcardCompleted] = useState(false);
 
-  // Quiz state
   const [currentQuizIndex, setCurrentQuizIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, number>>({});
   const [quizScore, setQuizScore] = useState(0);
   const [quizCompleted, setQuizCompleted] = useState(false);
   const [wrongAnswers, setWrongAnswers] = useState<QuizQuestion[]>([]);
 
-  // Retest state — reuses currentQuizIndex for navigation
+  // Reuses the same quiz index for retest navigation.
   const [retestMode, setRetestMode] = useState(false);
   const [retestQuestions, setRetestQuestions] = useState<QuizQuestion[]>([]);
   const [retestAnswers, setRetestAnswers] = useState<Record<string, number>>({});
   const [retestScore, setRetestScore] = useState(0);
   const [retestCompleted, setRetestCompleted] = useState(false);
 
-  // Stale request protection: only the latest request may update UI
+  // Only the latest request may update the session state.
   const requestId = useRef(0);
   const abortControllerRef = useRef<AbortController | null>(null);
 
@@ -157,7 +155,6 @@ export function useStudySession() {
     setRetestCompleted(false);
   }, []);
 
-  // Flashcard controls
   const nextFlashcard = useCallback(() => {
     if (!studyData) return;
     setIsFlipped(false);
@@ -183,7 +180,6 @@ export function useStudySession() {
     setFlashcardCompleted(false);
   }, []);
 
-  // Quiz controls — routes to retestAnswers when in retest mode
   const selectQuizAnswer = useCallback((questionId: string, answerIndex: number) => {
     if (retestMode) {
       setRetestAnswers((prev) => ({ ...prev, [questionId]: answerIndex }));

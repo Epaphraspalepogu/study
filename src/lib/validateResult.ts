@@ -6,11 +6,6 @@ export interface ValidationResult {
   error?: string;
 }
 
-/**
- * Validates the AI response structure before rendering.
- * This is a defensive check — even though the server also validates,
- * the frontend must never trust external data blindly.
- */
 export function validateStudyMaterial(data: unknown): ValidationResult {
   if (!data || typeof data !== 'object') {
     return { valid: false, error: 'The AI returned an unexpected format.' };

@@ -12,7 +12,6 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json({ limit: '2mb' }));
 
-// Request timeout (30 seconds)
 const REQUEST_TIMEOUT_MS = 30000;
 
 function validateRequest({ input, type, difficulty, count }) {
@@ -43,7 +42,6 @@ function validateRequest({ input, type, difficulty, count }) {
 }
 
 app.post('/api/generate', async (req, res) => {
-  // Set a timeout
   const timer = setTimeout(() => {
     res.status(504).json({ error: 'Taking longer than expected. Please try again.' });
   }, REQUEST_TIMEOUT_MS);
@@ -94,7 +92,15 @@ app.post('/api/generate', async (req, res) => {
     clearTimeout(timer);
 
     if (!res.headersSent) {
-      return res.status(500).json({ error: 'Something went wrong while generating your study session.' });
+      const isConfigurationError = error.code === 'MISSING_LLM_API_KEY';
+      const isProviderError = error.code === 'LLM_API_ERROR';
+      return res.status(isConfigurationError || isProviderError ? 503 : 500).json({
+        error: isConfigurationError
+          ? error.message
+          : isProviderError
+            ? error.message
+          : 'Something went wrong while generating your study session.',
+      });
     }
   }
 });

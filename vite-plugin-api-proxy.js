@@ -1,14 +1,13 @@
 import http from 'node:http';
 
-// Vite plugin that proxies /api/* requests to the Express backend during dev.
-// This keeps the API key server-side while letting the frontend call /api/generate directly.
+// Keep the API key server-side while proxying /api calls during dev.
 export default function apiProxyPlugin(target = 'http://localhost:3001') {
   return {
     name: 'api-proxy',
     configureServer(server) {
       server.middlewares.use('/api', (req, res) => {
         const proxyReq = http.request(
-          target + req.url,
+          target + '/api' + req.url,
           {
             method: req.method,
             headers: { ...req.headers, host: new URL(target).host },
