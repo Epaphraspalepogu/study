@@ -1,26 +1,53 @@
 import http from 'node:http';
 
-// Keep the API key server-side while proxying /api calls during dev.
 export default function apiProxyPlugin(target = 'http://localhost:3001') {
   return {
     name: 'api-proxy',
+
     configureServer(server) {
-      server.middlewares.use('/api', (req, res) => {
+      server.middlewares.use((req, res, next) => {
+        if (!req.url?.startsWith('/api/')) {
+          return next();
+        }
+
+        const targetUrl = new URL(req.url, target);
+
         const proxyReq = http.request(
-          target + '/api' + req.url,
+          targetUrl,
           {
             method: req.method,
-            headers: { ...req.headers, host: new URL(target).host },
+            headers: {
+              ...req.headers,
+              host: targetUrl.host,
+            },
           },
           (proxyRes) => {
-            res.writeHead(proxyRes.statusCode || 502, proxyRes.headers);
+            res.writeHead(
+              proxyRes.statusCode || 502,
+              proxyRes.headers
+            );
+
             proxyRes.pipe(res);
           }
         );
-        proxyReq.on('error', () => {
-          res.writeHead(502, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'Something went wrong while generating your study session.' }));
+
+        proxyReq.on('error', (error) => {
+          console.error('[API Proxy] Error:', error.message);
+
+          if (!res.headersSent) {
+            res.writeHead(502, {
+              'Content-Type': 'application/json',
+            });
+
+            res.end(
+              JSON.stringify({
+                error:
+                  'Unable to connect to the backend server.',
+              })
+            );
+          }
         });
+
         req.pipe(proxyReq);
       });
     },
