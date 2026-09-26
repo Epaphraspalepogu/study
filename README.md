@@ -85,6 +85,12 @@ You can also run the backend separately:
 npm run server
 ```
 
+### Deploy to Vercel
+
+Deploy the repository with the Vite framework preset and `dist` as the output directory. Vercel deploys `api/generate.js` and `api/health.js` as serverless functions; the local Vite proxy is used only by `npm run dev`.
+
+Add `LLM_API_KEY` in the Vercel project environment variables for each environment you deploy. `GEMINI_API_KEY` is also supported, and takes precedence if both are set. Keep either key server-side and do not add it to a `VITE_` variable.
+
 ## Environment variables
 
 | Variable | Purpose | Required |
